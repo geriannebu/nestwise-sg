@@ -13,6 +13,7 @@ def init_session_state():
         "current_user": None,
         "users": {},  # email -> {"password": "..."}
         "user_histories": {},  # email -> [search dicts]
+        "saved_flats": {},  # email -> [saved flats]
     }
 
     for key, value in defaults.items():

@@ -14,7 +14,7 @@ def render_listing_tab(listings_df: pd.DataFrame):
     top_n = min(3, len(listings_df))
     st.markdown("##### Top picks")
 
-    for _, row in listings_df.head(top_n).iterrows():
+    for idx, row in listings_df.head(top_n).iterrows():
         diff = row["asking_vs_predicted_pct"]
         arrow = "below" if diff < 0 else "above"
         tag = valuation_tag_html(row["valuation_label"])
@@ -40,6 +40,29 @@ def render_listing_tab(listings_df: pd.DataFrame):
             """,
             unsafe_allow_html=True,
         )
+
+        # --- Save Flat button ---
+        user = st.session_state.get("current_user")
+        if user:
+            st.session_state.saved_flats.setdefault(user, [])
+            if st.button(f"Save flat {row['listing_id']}", key=f"save_flat_{row['listing_id']}"):
+                # Check for duplicates
+                saved_ids = [f["listing_id"] for f in st.session_state.saved_flats[user]]
+                if row["listing_id"] not in saved_ids:
+                    st.session_state.saved_flats[user].append({
+                        "listing_id": row["listing_id"],
+                        "town": row["town"],
+                        "flat_type": row["flat_type"],
+                        "floor_area_sqm": row["floor_area_sqm"],
+                        "storey_range": row["storey_range"],
+                        "asking_price": row["asking_price"],
+                        "predicted_price": row["predicted_price"],
+                        "valuation_label": row["valuation_label"],
+                        "score": row.get("score", None)
+                    })
+                    st.success(f"Saved {row['listing_id']} ✅")
+                else:
+                    st.info(f"{row['listing_id']} already saved.")
 
         if "listing_url" in row and row["listing_url"]:
             st.link_button("View original listing →", row["listing_url"])

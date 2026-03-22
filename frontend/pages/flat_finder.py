@@ -24,7 +24,7 @@ def render_flat_finder_page(inputs, bundle, map_bundle):
     with subtab3:
         render_towns_tab(inputs, bundle["recommendations_df"])
         st.markdown("---")
-        render_scenario_testing_output(inputs, bundle)
+        render_scenario_testing_output(inputs)  # <-- only pass inputs now
 
     with subtab4:
         render_map_tab(inputs, map_bundle)
