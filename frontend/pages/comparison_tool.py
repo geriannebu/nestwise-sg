@@ -277,6 +277,52 @@ def _next_hypothetical_id(user_saved):
 
 
 # =========================================================
+# Styling
+# =========================================================
+def _render_card_styles():
+    st.markdown(
+        """
+        <style>
+        .nw-card {
+            background: white;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 20px;
+            padding: 1.2rem 1.2rem 1rem 1.2rem;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+            min-height: 560px;
+            margin-bottom: 1rem;
+        }
+
+        .nw-card h4 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            line-height: 1.3;
+            color: #0f172a;
+        }
+
+        .nw-card-row {
+            margin-bottom: 0.65rem;
+            color: #334155;
+            font-size: 0.98rem;
+        }
+
+        .nw-card-label {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .nw-card-divider {
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+            margin: 1rem 0 0.9rem 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# =========================================================
 # Hypothetical flat
 # =========================================================
 def _save_hypothetical_flat(inputs):
@@ -433,42 +479,11 @@ def _render_summary_cards(selected_df):
         f"and {best_fit['listing_id']} best matches your search profile."
     )
 
-
-def _render_side_by_side_table(selected_df):
-    st.markdown("### Side-by-side comparison")
-
-    disp = selected_df.copy()
-
-    for col in ["asking_price", "predicted_price", "recent_median_transacted"]:
-        if col in disp.columns:
-            disp[col] = disp[col].map(lambda x: fmt_sgd(x) if pd.notna(x) else "—")
-
-    if "asking_vs_predicted_pct" in disp.columns:
-        disp["asking_vs_predicted_pct"] = disp["asking_vs_predicted_pct"].map(
-            lambda x: f"{x:+.1f}%" if pd.notna(x) else "—"
-        )
-
-    display_cols = [
-        "listing_id",
-        "comparison_source",
-        "town",
-        "flat_type",
-        "floor_area_sqm",
-        "storey_range",
-        "asking_price",
-        "predicted_price",
-        "recent_median_transacted",
-        "asking_vs_predicted_pct",
-        "valuation_label",
-        "value_score",
-        "accessibility_score",
-        "fit_score",
-        "overall_score",
-    ]
-    display_cols = [c for c in display_cols if c in disp.columns]
-
-    st.dataframe(disp[display_cols], use_container_width=True, hide_index=True)
-
+def _source_legend_label(row):
+    source = row.get("comparison_source", "Saved flat")
+    flat_type = row.get("flat_type", "Flat")
+    town = row.get("town", "Unknown")
+    return f"{source} ({flat_type} at {town})"
 
 def _render_listing_score_cards(selected_df):
     st.markdown("### Side-by-Side Listing Comparison")
@@ -477,74 +492,83 @@ def _render_listing_score_cards(selected_df):
 
     for i, (_, row) in enumerate(selected_df.iterrows()):
         with cols[i]:
-            st.markdown(f"#### {_format_listing_label(row)}")
-            st.write(f"**Town:** {row.get('town', '—')}")
-            if "postal_code" in row and pd.notna(row.get("postal_code")) and str(row.get("postal_code")).strip():
-                st.write(f"**Postal Code:** {row.get('postal_code')}")
-            st.write(f"**Price:** {fmt_sgd(row.get('asking_price', 0))}")
-            st.write(f"**Flat Type:** {row.get('flat_type', '—')}")
-            st.write(f"**Floor Area:** {row.get('floor_area_sqm', '—')} sqm")
-            st.write(f"**Floor Level:** {row.get('storey_range', '—')}")
-            if "comparison_source" in row:
-                st.write(f"**Source:** {row.get('comparison_source', 'Saved flat')}")
+            with st.container(border=True):
+                st.markdown(f"#### {_format_listing_label(row)}")
 
-            st.markdown("---")
+                st.write(f"**Town:** {row.get('town', '—')}")
 
-            value_score = row.get("value_score", np.nan)
-            value_score = 70.0 if pd.isna(value_score) else float(value_score)
-            value_score = max(0.0, min(value_score, 100.0))
-            st.write(f"**Value-for-money score:** {value_score:.0f}/100")
-            st.progress(value_score / 100)
+                if "postal_code" in row and pd.notna(row.get("postal_code")) and str(row.get("postal_code")).strip():
+                    st.write(f"**Postal Code:** {row.get('postal_code')}")
 
-            if value_score == float(selected_df["value_score"].max()):
-                st.caption("Best value among selected options")
-            elif value_score >= float(selected_df["value_score"].median()):
-                st.caption("Reasonably priced with some trade-offs")
-            else:
-                st.caption("Priced at a premium relative to comparable options")
+                predicted_price = row.get("predicted_price", np.nan)
+                pred_text = fmt_sgd(predicted_price) if pd.notna(predicted_price) else "—"
+                st.write(f"**Predicted Price:** {pred_text}")
 
-            access_score = row.get("accessibility_score", np.nan)
-            access_score = 70.0 if pd.isna(access_score) else float(access_score)
-            access_score = max(0.0, min(access_score, 100.0))
-            st.write(f"**Accessibility score:** {access_score:.0f}/100")
-            st.progress(access_score / 100)
+                st.write(f"**Flat Type:** {row.get('flat_type', '—')}")
+                st.write(f"**Floor Area:** {row.get('floor_area_sqm', '—')} sqm")
+                st.write(f"**Floor Level:** {row.get('storey_range', '—')}")
 
-            if access_score == float(selected_df["accessibility_score"].max()):
-                st.caption("Strongest accessibility among selected flats")
-            elif access_score >= float(selected_df["accessibility_score"].median()):
-                st.caption("Good day-to-day convenience for key amenities")
-            else:
-                st.caption("More limited convenience for daily amenities")
+                if "comparison_source" in row:
+                    st.write(f"**Source:** {row.get('comparison_source', 'Saved flat')}")
 
-            fit_score = row.get("fit_score", np.nan)
-            fit_score = 70.0 if pd.isna(fit_score) else float(fit_score)
-            fit_score = max(0.0, min(fit_score, 100.0))
-            st.write(f"**Fit score:** {fit_score:.0f}/100")
-            st.progress(fit_score / 100)
+                st.divider()
 
-            if fit_score == float(selected_df["fit_score"].max()):
-                st.caption("Best match to the stated user preferences")
-            elif fit_score >= float(selected_df["fit_score"].median()):
-                st.caption("Generally aligns well with the user's priorities")
-            else:
-                st.caption("Suitable, but less aligned with the user's preferred balance of factors")
+                value_score = row.get("value_score", np.nan)
+                value_score = 70.0 if pd.isna(value_score) else float(value_score)
+                value_score = max(0.0, min(value_score, 100.0))
+                st.write(f"**Value-for-money score:** {value_score:.0f}/100")
+                st.progress(value_score / 100)
 
+                if value_score == float(selected_df["value_score"].max()):
+                    st.caption("Best value among selected options")
+                elif value_score >= float(selected_df["value_score"].median()):
+                    st.caption("Reasonably priced with some trade-offs")
+                else:
+                    st.caption("Priced at a premium relative to comparable options")
 
-def _render_metric_bar_chart(selected_df, metric_col, chart_title, color="#2563eb"):
+                access_score = row.get("accessibility_score", np.nan)
+                access_score = 70.0 if pd.isna(access_score) else float(access_score)
+                access_score = max(0.0, min(access_score, 100.0))
+                st.write(f"**Accessibility score:** {access_score:.0f}/100")
+                st.progress(access_score / 100)
+
+                if access_score == float(selected_df["accessibility_score"].max()):
+                    st.caption("Strongest accessibility among selected flats")
+                elif access_score >= float(selected_df["accessibility_score"].median()):
+                    st.caption("Good day-to-day convenience for key amenities")
+                else:
+                    st.caption("More limited convenience for daily amenities")
+
+                fit_score = row.get("fit_score", np.nan)
+                fit_score = 70.0 if pd.isna(fit_score) else float(fit_score)
+                fit_score = max(0.0, min(fit_score, 100.0))
+                st.write(f"**Fit score:** {fit_score:.0f}/100")
+                st.progress(fit_score / 100)
+
+                if fit_score == float(selected_df["fit_score"].max()):
+                    st.caption("Best match to the stated user preferences")
+                elif fit_score >= float(selected_df["fit_score"].median()):
+                    st.caption("Generally aligns well with the user's priorities")
+                else:
+                    st.caption("Suitable, but less aligned with the user's preferred balance of factors")
+                    
+def _render_metric_bar_chart(selected_df, metric_col, chart_title):
     chart_df = selected_df.copy()
-    chart_df["listing_label"] = chart_df.apply(_format_listing_label, axis=1)
-
     chart_df[metric_col] = pd.to_numeric(chart_df[metric_col], errors="coerce").fillna(0)
-    chart_df = chart_df.sort_values(metric_col, ascending=False)
+    chart_df["legend_label"] = chart_df.apply(_source_legend_label, axis=1)
 
     chart = (
         alt.Chart(chart_df)
-        .mark_bar(color=color)
+        .mark_bar()
         .encode(
             x=alt.X(f"{metric_col}:Q", title="Score", scale=alt.Scale(domain=[0, 100])),
-            y=alt.Y("listing_label:N", sort="-x", title="Listing"),
+            y=alt.Y("listing_id:N", sort="-x", title="Listing ID"),
+            color=alt.Color("legend_label:N", title="Listing type"),
             tooltip=[
-                alt.Tooltip("listing_label:N", title="Listing"),
+                alt.Tooltip("listing_id:N", title="Listing ID"),
+                alt.Tooltip("legend_label:N", title="Legend"),
+                alt.Tooltip("town:N", title="Town"),
+                alt.Tooltip("flat_type:N", title="Flat type"),
                 alt.Tooltip(f"{metric_col}:Q", title="Score", format=".1f"),
             ],
         )
@@ -568,11 +592,10 @@ def _render_metric_comparison_tabs(selected_df):
             selected_df,
             "value_score",
             "Value-for-money comparison across selected flats",
-            color="#2563eb",
         )
         best_value = selected_df.sort_values("value_score", ascending=False).iloc[0]
         st.write(
-            f"**{_format_listing_label(best_value)}** currently has the strongest value-for-money score among the selected flats."
+            f"**{best_value['listing_id']}** currently has the strongest value-for-money score among the selected flats."
         )
 
     with tab2:
@@ -580,11 +603,10 @@ def _render_metric_comparison_tabs(selected_df):
             selected_df,
             "accessibility_score",
             "Accessibility comparison across selected flats",
-            color="#059669",
         )
         best_access = selected_df.sort_values("accessibility_score", ascending=False).iloc[0]
         st.write(
-            f"**{_format_listing_label(best_access)}** currently has the strongest accessibility score among the selected flats."
+            f"**{best_access['listing_id']}** currently has the strongest accessibility score among the selected flats."
         )
 
     with tab3:
@@ -592,13 +614,11 @@ def _render_metric_comparison_tabs(selected_df):
             selected_df,
             "fit_score",
             "Fit comparison across selected flats",
-            color="#dc2626",
         )
         best_fit = selected_df.sort_values("fit_score", ascending=False).iloc[0]
         st.write(
-            f"**{_format_listing_label(best_fit)}** currently has the strongest fit score among the selected flats."
+            f"**{best_fit['listing_id']}** currently has the strongest fit score among the selected flats."
         )
-
 
 def _render_comparison_insights(selected_df):
     best_value = selected_df.sort_values("value_score", ascending=False).iloc[0]
@@ -611,7 +631,7 @@ def _render_comparison_insights(selected_df):
         st.markdown("### Comparison Insights")
         st.markdown("#### Value-for-Money Comparison")
         st.write(
-            f"**{_format_listing_label(best_value)}** appears to offer the best value for money among the selected options."
+            f"**{_format_listing_label(best_value)} ({best_value['listing_id']})** appears to offer the best value for money among the selected options."
         )
         if "asking_price" in best_value and pd.notna(best_value["asking_price"]):
             st.write(f"It has an asking price of **{fmt_sgd(best_value['asking_price'])}**.")
@@ -624,21 +644,21 @@ def _render_comparison_insights(selected_df):
 
         st.markdown("#### Accessibility Comparison")
         st.write(
-            f"**{_format_listing_label(best_access)}** provides the strongest accessibility, making it the most convenient option for day-to-day travel and nearby amenities."
+            f"**{_format_listing_label(best_access)} ({best_access['listing_id']})** provides the strongest accessibility, making it the most convenient option for day-to-day travel and nearby amenities."
         )
 
     with right:
         st.markdown("### ")
         st.markdown("#### Fit Comparison")
         st.write(
-            f"**{_format_listing_label(best_fit)}** is the strongest match to the user's stated priorities, based on its balance of affordability, convenience, and flat characteristics."
+            f"**{_format_listing_label(best_fit)} ({best_fit['listing_id']})** is the strongest match to the user's stated priorities, based on its balance of affordability, convenience, and flat characteristics."
         )
 
         st.markdown("#### Trade-off Summary")
         st.write(
-            f"While **{_format_listing_label(best_value)}** performs best on value-for-money, "
-            f"**{_format_listing_label(best_access)}** is strongest on accessibility, "
-            f"and **{_format_listing_label(best_fit)}** leads on overall fit."
+            f"While **{best_value['listing_id']}** performs best on value-for-money, "
+            f"**{best_access['listing_id']}** is strongest on accessibility, "
+            f"and **{best_fit['listing_id']}** leads on overall fit."
         )
 
 
@@ -661,6 +681,7 @@ def _render_detailed_breakdown(selected_df):
     }
 
     display_cols = {
+        "listing_id": "Listing ID",
         "listing": "Listing",
         "comparison_source": "Source",
         "price": "Price",
@@ -689,7 +710,7 @@ def _render_recommendation_summary(selected_df):
     best_overall = selected_df.sort_values("overall_score", ascending=False).iloc[0]
 
     st.markdown("### Recommendation Summary")
-    st.write(f"**Recommended all-round option: {_format_listing_label(best_overall)}**")
+    st.write(f"**Recommended all-round option: {_format_listing_label(best_overall)} ({best_overall['listing_id']})**")
     st.write(
         "This listing performs best overall across value-for-money, accessibility, and fit, making it the strongest balanced choice among the selected flats."
     )
@@ -697,7 +718,7 @@ def _render_recommendation_summary(selected_df):
     st.markdown(
         f"""
 - **Best overall score:** {best_overall['overall_score']:.1f}/100  
-- **Price:** {fmt_sgd(best_overall['asking_price']) if pd.notna(best_overall.get('asking_price')) else '—'}  
+- **Predicted Price:** {fmt_sgd(best_overall['predicted_price']) if pd.notna(best_overall.get('predicted_price')) else '—'}  
 - **Why it stands out:** Stronger balance across the three comparison dimensions.
         """
     )
@@ -706,8 +727,8 @@ def _render_recommendation_summary(selected_df):
     best_access = selected_df.sort_values("accessibility_score", ascending=False).iloc[0]
 
     st.write(
-        f"If affordability is your main concern, **{_format_listing_label(best_value)}** may be the better choice. "
-        f"If daily convenience matters most, **{_format_listing_label(best_access)}** may be more suitable."
+        f"If affordability is your main concern, **{best_value['listing_id']}** may be the better choice. "
+        f"If daily convenience matters most, **{best_access['listing_id']}** may be more suitable."
     )
 
 
@@ -805,9 +826,7 @@ def render_comparison_page(inputs, listings_df: pd.DataFrame):
     _render_summary_cards(selected_df)
     st.markdown("---")
 
-    _render_side_by_side_table(selected_df)
-    st.markdown("---")
-
+    # Removed the old dataframe table here
     _render_listing_score_cards(selected_df)
     st.markdown("---")
 
