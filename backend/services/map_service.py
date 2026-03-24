@@ -41,6 +41,30 @@ def mock_amenities_for_town(towns):
 
     return pd.DataFrame(rows)
 
+def mock_listing_points(listings_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create mock lat/lon for listings using town centers.
+    Minimal-change helper so we can plot actual top listings on the map.
+    """
+    if listings_df is None or listings_df.empty:
+        return pd.DataFrame()
+
+    rows = []
+    for i, row in listings_df.reset_index(drop=True).iterrows():
+        base_lat, base_lon = latlon_from_town(row["town"])
+        rng = np.random.default_rng(200 + i)
+
+        rows.append({
+            "listing_id": row["listing_id"],
+            "town": row["town"],
+            "flat_type": row["flat_type"],
+            "asking_price": row["asking_price"],
+            "valuation_label": row.get("valuation_label", ""),
+            "lat": base_lat + rng.uniform(-0.008, 0.008),
+            "lon": base_lon + rng.uniform(-0.008, 0.008),
+        })
+
+    return pd.DataFrame(rows)
 
 def get_map_bundle(inputs: UserInputs, recommendations_df: pd.DataFrame):
     selected_towns = []
