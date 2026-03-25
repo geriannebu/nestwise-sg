@@ -58,37 +58,53 @@ def inject_css():
            SIDEBAR — target both old + new Streamlit
            selectors so it works on any version
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        section[data-testid="stSidebar"],
-        [data-testid="stSidebar"] {
-            background: var(--bg-surface) !important;
-            border-right: 1px solid var(--border) !important;
-            z-index: 999999 !important;
+        /* ── Modern Sidebar Navigation — Refined Left Accent ── */
+
+        /* Remove default gaps and padding from the container */
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] {
+            gap: 4px !important; /* Small gap between items feels cleaner than zero */
+            padding: 0.5rem 0 !important;
         }
 
-        section[data-testid="stSidebar"] > div:first-child,
-        [data-testid="stSidebar"] > div:first-child {
-            padding: 1.4rem 1rem 1rem !important;
-        }
-
-        /* Radio nav items */
-        section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label,
+        /* Base style for navigation items */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label {
             font-family: var(--font) !important;
-            font-size: 0.9rem !important;
-            font-weight: 600 !important;
-            color: var(--text-2) !important;
-            background: var(--bg-soft) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 10px !important;
-            padding: 0.65rem 0.85rem !important;
-            margin-bottom: 0.4rem !important;
-            transition: background 0.12s, border-color 0.12s !important;
+            font-size: 0.95rem !important; /* Slightly larger for readability */
+            font-weight: 500 !important;
+            color: var(--text-color) !important;
+            opacity: 0.8;
+            background: transparent !important;
+            border: none !important;
+            border-left: 4px solid transparent !important; /* Thicker accent bar */
+            border-radius: 0 8px 8px 0 !important; /* Rounded corners on the right side */
+            padding: 0.35rem 1.0rem !important;
+            margin: 0.1rem 0 !important;
+            transition: all 0.2s ease-in-out !important;
             cursor: pointer !important;
+            width: 100% !important;
         }
-        section[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover,
+
+        /* Hover State: Subtle lift and background tint */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover {
-            background: var(--mint-light) !important;
-            border-color: var(--mint-border) !important;
+            opacity: 1;
+            color: #1E88E5 !important;
+            background: rgba(62, 180, 137, 0.15) !important; /* Soft tint */
+            border-left-color: #3EB489 !important;
+        }
+
+        /* Active/Selected Item: High contrast with "Glass" effect */
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label[data-checked="true"] {
+            opacity: 1;
+            color: var(--primary-color) !important;
+            font-weight: 600 !important;
+            border-left-color: var(--primary-color) !important;
+            background: rgba(255, 255, 255, 0.05) !important; /* Works for light and dark themes */
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Hide the native radio button circles */
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label > div:first-child {
+            display: none !important;
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
