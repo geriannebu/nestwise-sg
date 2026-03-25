@@ -58,51 +58,45 @@ def inject_css():
            SIDEBAR — target both old + new Streamlit
            selectors so it works on any version
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        /* ── Modern Sidebar Navigation — Refined Left Accent ── */
-
-        /* Remove default gaps and padding from the container */
+        /* ── NestWise Navigation Style ── */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] {
-            gap: 4px !important; /* Small gap between items feels cleaner than zero */
-            padding: 0.5rem 0 !important;
+            gap: 6px !important;
+            padding: 1rem 0 !important;
         }
 
-        /* Base style for navigation items */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label {
             font-family: var(--font) !important;
-            font-size: 0.95rem !important; /* Slightly larger for readability */
+            font-size: 0.9rem !important;
             font-weight: 500 !important;
-            color: var(--text-color) !important;
-            opacity: 0.8;
+            color: var(--text-2) !important;
             background: transparent !important;
             border: none !important;
-            border-left: 4px solid transparent !important; /* Thicker accent bar */
-            border-radius: 0 8px 8px 0 !important; /* Rounded corners on the right side */
-            padding: 0.35rem 1.0rem !important;
+            border-left: 4px solid transparent !important;
+            border-radius: 0 10px 10px 0 !important; 
+            padding: 0.41rem 1.67rem !important;
             margin: 0.1rem 0 !important;
-            transition: all 0.2s ease-in-out !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
             cursor: pointer !important;
             width: 100% !important;
         }
 
-        /* Hover State: Subtle lift and background tint */
+        /* Hover: Mint Nudge */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover {
-            opacity: 1;
-            color: #1E88E5 !important;
-            background: rgba(62, 180, 137, 0.15) !important; /* Soft tint */
-            border-left-color: #3EB489 !important;
+            color: var(--mint) !important;
+            background: rgba(5, 158, 135, 0.08) !important;
+            border-left-color: rgba(5, 158, 135, 0.4) !important;
+            padding-left: 1.5rem !important; /* Visual 'nudge' effect */
         }
 
-        /* Active/Selected Item: High contrast with "Glass" effect */
+        /* Active: Solid NestWise Mint */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label[data-checked="true"] {
-            opacity: 1;
-            color: var(--primary-color) !important;
-            font-weight: 600 !important;
-            border-left-color: var(--primary-color) !important;
-            background: rgba(255, 255, 255, 0.05) !important; /* Works for light and dark themes */
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+            color: var(--mint) !important;
+            font-weight: 700 !important;
+            border-left-color: var(--mint) !important;
+            background: rgba(5, 158, 135, 0.12) !important;
         }
 
-        /* Hide the native radio button circles */
+        /* Hide the radio dot */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label > div:first-child {
             display: none !important;
         }
@@ -241,6 +235,32 @@ def inject_css():
             font-weight: 800 !important;
             letter-spacing: -0.03em !important;
             color: var(--text-1) !important;
+        }
+
+        /* Custom Recent Search Card for Sidebar */
+        .nw-recent-search {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.85rem;
+            margin: 1rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nw-recent-label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--mint);
+            margin-bottom: 0.25rem;
+        }
+
+        .nw-recent-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-1);
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

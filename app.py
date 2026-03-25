@@ -84,20 +84,39 @@ def render_sidebar():
         bundle_s = st.session_state.get("latest_bundle")
 
         if inputs_s and bundle_s:
-            st.sidebar.markdown("**Last search**")
-            st.sidebar.markdown(
-                f"💰 S${inputs_s.budget:,}  \n"
-                f"🏠 {inputs_s.flat_type}  \n"
-                f"📍 {inputs_s.town or 'Recommendation mode'}  \n"
-                f"📊 S${bundle_s['predicted_price']:,.0f} predicted"
-            )
-            if st.sidebar.button("Clear results", use_container_width=True):
+            # ─── BEAUTIFIED INSIGHTS CARD ───
+            st.sidebar.markdown(f"""
+                <div class="nw-recent-search">
+                    <span class="nw-recent-label">Latest Search Insights</span>
+                    <div style="margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="font-size: 0.8rem; color: var(--text-3);">Budget</span>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-1);">S${inputs_s.budget:,}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="font-size: 0.8rem; color: var(--text-3);">Flat Type</span>
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-1);">{inputs_s.flat_type}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="font-size: 0.8rem; color: var(--text-3);">Location</span>
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-1);">{inputs_s.town or 'All Regions'}</span>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(5, 158, 137, 0.15);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: var(--mint); font-weight: 700; text-transform: uppercase;">Predicted</span>
+                            <span style="font-size: 1.1rem; font-weight: 800; color: var(--mint);">S${bundle_s['predicted_price']:,.0f}</span>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            if st.sidebar.button("🗑️ Clear current results", use_container_width=True):
                 st.session_state.insights_generated = False
                 st.session_state.latest_inputs = None
                 st.session_state.latest_bundle = None
                 st.session_state.latest_map_bundle = None
                 st.rerun()
-
+                
     return page
 
 
