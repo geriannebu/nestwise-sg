@@ -68,31 +68,94 @@ def render_scenario_testing_output(user_inputs: UserInputs):
         landmark_postals=user_inputs.landmark_postals
     )
 
+
     # --- Compute scenario predicted price ---
     bundle = get_prediction_bundle(scenario_inputs)
     scenario_price = bundle["predicted_price"]
-    price_diff = scenario_price - original_price  # difference from original
 
-    # --- Display metrics ---
-    st.markdown("**Scenario Predicted Price:**")
-    st.metric("Predicted flat value", f"${scenario_price:,.0f}")
+    price_diff = scenario_price - original_price
+    percent_diff = (price_diff / original_price) * 100 if original_price != 0 else 0
 
-    # --- Insights ---
-    st.markdown("**Scenario Insights:**")
+    # --- Display comparison cards ---
+    st.markdown("### 💰 Price Comparison")
 
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "Original Estimated Price",
+            f"${original_price:,.0f}"
+        )
+
+    with col2:
+        st.metric(
+            "Scenario Estimated Price",
+            f"${scenario_price:,.0f}",
+            delta=f"{price_diff:,.0f} ({percent_diff:.1f}%)"
+        )
+
+    with col3:
+        # --- Budget comparison ---
+        budget_diff = scenario_price - user_inputs.budget
+
+        if budget_diff > 0:
+            # ❌ Over budget → RED
+            col3.metric(
+                "Vs Your Budget",
+                f"${scenario_price:,.0f}",
+                delta=f"+${budget_diff:,.0f} over budget",
+                delta_color="inverse"   # makes positive = red
+            )
+        else:
+            # ✅ Under budget → GREEN
+            col3.metric(
+                "Vs Your Budget",
+                f"${scenario_price:,.0f}",
+                delta=f"-${abs(budget_diff):,.0f} under budget",
+                delta_color="normal"   # makes negative = green
+            )
+
+    # ----------------------------
+    # Insights
+    # ----------------------------
+    st.markdown("### 🔄 Scenario Changes")
+
+    changes = []
+
+    # Track changes
     if adjusted_flat_type != user_inputs.flat_type:
-        diff = scenario_price - original_price
-        st.info(f"Testing flat type {adjusted_flat_type} changes predicted price by ${diff:,.0f}.")
+        changes.append(f"Flat type: {user_inputs.flat_type} → {adjusted_flat_type}")
 
     if adjusted_area != user_inputs.floor_area_sqm:
-        diff = scenario_price - original_price
-        st.info(f"Changing floor area to {adjusted_area} sqm changes predicted price by ${diff:,.0f}.")
+        changes.append(f"Floor area: {user_inputs.floor_area_sqm} → {adjusted_area} sqm")
 
     if adjusted_lease_year != user_inputs.lease_commence_year:
-        diff = scenario_price - original_price
-        st.info(f"Changing lease commence year to {adjusted_lease_year} changes predicted price by ${diff:,.0f}.")
+        changes.append(f"Lease year: {user_inputs.lease_commence_year} → {adjusted_lease_year}")
 
     for amenity, new_score in adjusted_amenities.items():
-        if new_score != user_inputs.amenity_weights[amenity]:
-            diff = scenario_price - original_price
-            st.info(f"Changing {amenity} priority from {user_inputs.amenity_weights[amenity]} to {new_score} changes predicted price by ${diff:,.0f}.")
+        old_score = user_inputs.amenity_weights[amenity]
+        if new_score != old_score:
+            changes.append(f"{amenity}: priority {old_score} → {new_score}")
+
+    # Display changes
+    if changes:
+        for change in changes:
+            st.write(f"• {change}")
+    else:
+        st.write("No changes made.")
+
+    # ----------------------------
+    # Price impact summary
+    # ----------------------------
+    st.markdown("### 💡 Impact on Price")
+
+    if price_diff > 0:
+        st.warning(f"Price increased by **${price_diff:,.0f} ({percent_diff:.1f}%)**.")
+    else:
+        st.success(f"Price decreased by **${abs(price_diff):,.0f} ({abs(percent_diff):.1f}%)**.")
+
+    # Budget insight
+    if scenario_price > user_inputs.budget:
+        st.error("⚠️ This scenario exceeds your budget.")
+    else:
+        st.success("✅ This scenario is within your budget.")
