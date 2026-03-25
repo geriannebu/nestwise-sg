@@ -39,6 +39,10 @@ def get_prediction_bundle(inputs: UserInputs):
     recent_median_transacted = round(mock_recent_transaction_median(inputs))
     listings_df = mock_active_listings(inputs)
     recommendations_df = mock_recommend_towns(inputs) if not inputs.town else None
+    viable_listing_count = len(listings_df)
+    median_asking_active = round(listings_df["asking_price"].median()) if viable_listing_count else 0
+    mode = "town" if inputs.town else "recommendation"
+    mode_label = f"Town mode: {inputs.town}" if inputs.town else "Recommendation mode"
 
     return {
         "predicted_price": predicted_price,
@@ -48,4 +52,8 @@ def get_prediction_bundle(inputs: UserInputs):
         "recent_period": "last 6 months",
         "listings_df": listings_df,
         "recommendations_df": recommendations_df,
+        "viable_listing_count": viable_listing_count,
+        "median_asking_active": median_asking_active,
+        "mode": mode,
+        "mode_label": mode_label,
     }

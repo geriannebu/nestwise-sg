@@ -16,7 +16,7 @@ def render_flat_finder_page(inputs, bundle, map_bundle):
         ])
 
         with subtab1:
-            render_listing_tab(inputs, bundle["listings_df"])
+            render_listing_tab(inputs, bundle)
 
         with subtab2:
             render_scenario_testing_output(inputs)
@@ -33,7 +33,7 @@ def render_flat_finder_page(inputs, bundle, map_bundle):
         ])
 
         with subtab1:
-            render_listing_tab(inputs, bundle["listings_df"])
+            render_listing_tab(inputs, bundle)
 
         with subtab2:
             render_towns_tab(inputs, bundle["recommendations_df"])

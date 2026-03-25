@@ -4,7 +4,7 @@ from backend.schemas.inputs import UserInputs
 
 def render_scenario_testing_output(user_inputs: UserInputs):
     st.markdown("#### Scenario Testing")
-    st.caption("Try a what-if scenario to see how changing the flat profile affects the estimated fair value.")
+    st.caption("Test a what-if flat profile separately from the real listing results to see how the estimated fair value changes.")
 
     # --- Original prediction for reference ---
     original_bundle = get_prediction_bundle(user_inputs)

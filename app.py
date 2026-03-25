@@ -167,6 +167,13 @@ def render_discovery_page():
     render_budget_banner(latest_bundle, latest_inputs.budget)
     render_nestwise_pick(latest_inputs, latest_bundle)
 
+    st.caption(
+        f"{latest_bundle.get('mode_label', 'Search mode')} · "
+        f"{latest_bundle.get('viable_listing_count', 0)} viable active listings · "
+        f"Median asking price of comparable active listings: "
+        f"${latest_bundle.get('median_asking_active', 0):,.0f}"
+    )
+
     render_flat_finder_page(
         inputs=latest_inputs,
         bundle=latest_bundle,

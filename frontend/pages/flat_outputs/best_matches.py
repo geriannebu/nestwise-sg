@@ -4,12 +4,31 @@ import streamlit as st
 from backend.utils.formatters import fmt_sgd, valuation_tag_html
 
 
-def render_listing_tab(inputs, listings_df: pd.DataFrame):
+def render_listing_tab(inputs, bundle):
+    listings_df = bundle["listings_df"]
+    viable_count = bundle.get("viable_listing_count", len(listings_df))
+    median_asking = bundle.get("median_asking_active", None)
+    
     st.markdown("#### Best matches")
 
     if listings_df is None or listings_df.empty:
         st.info("No listings available.")
         return
+
+    st.markdown(
+    f"""
+    **{viable_count} viable listings** passed your constraints.
+    """
+    )
+
+    if median_asking:
+        st.markdown(
+            f"""
+            Median asking price of comparable active listings: **S${median_asking:,.0f}**
+            """
+        )
+    
+    st.markdown("### Best matches")
 
     top_n = min(3, len(listings_df))
     st.markdown("##### Top picks")
