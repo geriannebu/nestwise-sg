@@ -7,11 +7,10 @@ from frontend.pages.flat_outputs.scenario_testing import render_scenario_testing
 
 
 def render_flat_finder_page(inputs, bundle, map_bundle):
-    # Town insights should only appear in recommendation mode
     if inputs.town:
         subtab1, subtab2, subtab3 = st.tabs([
             "🏘️ Best matches",
-            "🧪 Scenario testing",
+            "🔭 What-if explorer",
             "📍 Map",
         ])
 
@@ -27,8 +26,8 @@ def render_flat_finder_page(inputs, bundle, map_bundle):
     else:
         subtab1, subtab2, subtab3, subtab4 = st.tabs([
             "🏘️ Best matches",
-            "⭐ Town insights",
-            "🧪 Scenario testing",
+            "🏙️ Town insights",
+            "🔭 What-if explorer",
             "📍 Map",
         ])
 
