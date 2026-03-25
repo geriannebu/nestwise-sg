@@ -4,7 +4,7 @@ import streamlit as st
 from backend.utils.formatters import fmt_sgd, valuation_tag_html
 
 
-def render_listing_tab(listings_df: pd.DataFrame):
+def render_listing_tab(inputs, listings_df: pd.DataFrame):
     st.markdown("#### Best matches")
 
     if listings_df is None or listings_df.empty:

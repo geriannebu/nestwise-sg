@@ -38,7 +38,7 @@ def get_prediction_bundle(inputs: UserInputs):
     predicted_price = round(mock_predict_price(inputs))
     recent_median_transacted = round(mock_recent_transaction_median(inputs))
     listings_df = mock_active_listings(inputs)
-    recommendations_df = mock_recommend_towns(inputs)
+    recommendations_df = mock_recommend_towns(inputs) if not inputs.town else None
 
     return {
         "predicted_price": predicted_price,
