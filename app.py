@@ -160,7 +160,7 @@ def render_discovery_page():
     render_section(
         "4",
         "Your results",
-        "Price analysis, listings, town matching, scenario testing, and map outputs.",
+        "Start with pricing insights, then explore real matches, town guidance, scenario testing, and map outputs.",
     )
 
     render_value_cards(latest_bundle, latest_inputs.budget)
