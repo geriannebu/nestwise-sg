@@ -321,11 +321,122 @@ def _render_card_styles():
         unsafe_allow_html=True,
     )
 
+# =========================================================
+# Postal sector mapping (first 2 digits of SG postal code)
+# Values are lists so we can show a selectbox when a sector
+# maps to multiple possible towns / areas.
+# =========================================================
+SECTOR_TO_TOWNS = {
+    "01": ["Raffles Place", "Marina", "People's Park"],
+    "02": ["Raffles Place", "Marina", "People's Park"],
+    "03": ["Raffles Place", "Marina", "People's Park"],
+    "04": ["Raffles Place", "Marina", "People's Park"],
+    "05": ["Raffles Place", "Marina", "People's Park"],
+    "06": ["Raffles Place", "Marina", "People's Park"],
+    "07": ["Tanjong Pagar", "Anson"],
+    "08": ["Tanjong Pagar", "Anson"],
+    "09": ["Telok Blangah", "Harbourfront"],
+    "10": ["Telok Blangah", "Harbourfront"],
+    "11": ["Pasir Panjang", "Clementi"],
+    "12": ["Pasir Panjang", "Clementi"],
+    "13": ["Pasir Panjang", "Clementi"],
+    "14": ["Queenstown", "Tiong Bahru"],
+    "15": ["Queenstown", "Tiong Bahru"],
+    "16": ["Queenstown", "Tiong Bahru"],
+    "17": ["Beach Road", "High Street"],
+    "18": ["Middle Road", "Golden Mile"],
+    "19": ["Middle Road", "Golden Mile"],
+    "20": ["Little India"],
+    "21": ["Little India"],
+    "22": ["Orchard", "River Valley"],
+    "23": ["Orchard", "River Valley"],
+    "24": ["Bukit Timah", "Tanglin"],
+    "25": ["Bukit Timah", "Tanglin"],
+    "26": ["Bukit Timah", "Tanglin"],
+    "27": ["Bukit Timah", "Tanglin"],
+    "28": ["Novena", "Thomson"],
+    "29": ["Novena", "Thomson"],
+    "30": ["Novena", "Thomson"],
+    "31": ["Balestier", "Toa Payoh", "Serangoon"],
+    "32": ["Balestier", "Toa Payoh", "Serangoon"],
+    "33": ["Balestier", "Toa Payoh", "Serangoon"],
+    "34": ["Macpherson", "Braddell"],
+    "35": ["Macpherson", "Braddell"],
+    "36": ["Macpherson", "Braddell"],
+    "37": ["Macpherson", "Braddell"],
+    "38": ["Geylang", "Eunos"],
+    "39": ["Geylang", "Eunos"],
+    "40": ["Geylang", "Eunos"],
+    "41": ["Geylang", "Eunos"],
+    "42": ["Katong", "Joo Chiat"],
+    "43": ["Katong", "Joo Chiat"],
+    "44": ["Katong", "Joo Chiat"],
+    "45": ["Katong", "Joo Chiat"],
+    "46": ["Bedok", "Upper East Coast"],
+    "47": ["Bedok", "Upper East Coast"],
+    "48": ["Bedok", "Upper East Coast"],
+    "49": ["Loyang", "Changi"],
+    "50": ["Loyang", "Changi"],
+    "51": ["Tampines", "Pasir Ris"],
+    "52": ["Tampines", "Pasir Ris"],
+    "53": ["Hougang", "Punggol", "Serangoon Garden"],
+    "54": ["Hougang", "Punggol", "Serangoon Garden"],
+    "55": ["Hougang", "Punggol", "Serangoon Garden"],
+    "56": ["Bishan", "Ang Mo Kio"],
+    "57": ["Bishan", "Ang Mo Kio"],
+    "58": ["Upper Bukit Timah", "Clementi Park", "Ulu Pandan"],
+    "59": ["Upper Bukit Timah", "Clementi Park", "Ulu Pandan"],
+    "60": ["Jurong"],
+    "61": ["Jurong"],
+    "62": ["Jurong"],
+    "63": ["Jurong"],
+    "64": ["Jurong"],
+    "65": ["Hillview", "Dairy Farm", "Bukit Panjang", "Choa Chu Kang"],
+    "66": ["Hillview", "Dairy Farm", "Bukit Panjang", "Choa Chu Kang"],
+    "67": ["Hillview", "Dairy Farm", "Bukit Panjang", "Choa Chu Kang"],
+    "68": ["Hillview", "Dairy Farm", "Bukit Panjang", "Choa Chu Kang"],
+    "69": ["Lim Chu Kang", "Tengah"],
+    "70": ["Lim Chu Kang", "Tengah"],
+    "71": ["Lim Chu Kang", "Tengah"],
+    "72": ["Kranji", "Woodgrove"],
+    "73": ["Kranji", "Woodgrove"],
+    "75": ["Yishun", "Sembawang"],
+    "76": ["Yishun", "Sembawang"],
+    "77": ["Upper Thomson", "Springleaf"],
+    "78": ["Upper Thomson", "Springleaf"],
+    "79": ["Seletar"],
+    "80": ["Seletar"],
+    "81": ["Loyang", "Changi"],
+    "82": ["Hougang", "Punggol", "Serangoon Garden"],
+}
 
 # =========================================================
 # Hypothetical flat
 # =========================================================
-def _save_hypothetical_flat(inputs):
+def _normalise_postal(postal):
+    if pd.isna(postal):
+        return None
+
+    s = str(postal).strip()
+    if s.endswith(".0"):
+        s = s[:-2]
+
+    s = "".join(ch for ch in s if ch.isdigit())
+    if not s:
+        return None
+
+    return s.zfill(6)
+
+
+def _lookup_towns_from_postal(postal_code):
+    postal_norm = _normalise_postal(postal_code)
+    if not postal_norm or len(postal_norm) < 2:
+        return []
+
+    sector = postal_norm[:2]
+    return SECTOR_TO_TOWNS.get(sector, [])
+
+def _save_hypothetical_flat(inputs, listings_df):
     st.markdown("#### Or create a hypothetical flat")
     st.caption("Add a hypothetical flat using your own inputs, then compare it with your saved flats.")
 
@@ -352,11 +463,29 @@ def _save_hypothetical_flat(inputs):
 
         with col1:
             hyp_postal = st.text_input("Postal code (optional)", placeholder="e.g. 560123")
-            hyp_town = st.text_input(
-                "Town",
-                value=str(inputs.town) if getattr(inputs, "town", None) and str(inputs.town) != "Recommendation mode" else "",
-                placeholder="e.g. Bishan",
-            )
+
+            detected_towns = _lookup_towns_from_postal(hyp_postal)
+
+            if len(detected_towns) == 1:
+                st.caption(f"Detected town from postal sector: {detected_towns[0]}")
+                hyp_town = st.text_input("Town", value=detected_towns[0], disabled=True)
+
+            elif len(detected_towns) > 1:
+                st.caption("Postal sector matches multiple possible towns. Please choose one.")
+                hyp_town = st.selectbox(
+                    "Town",
+                    options=detected_towns,
+                    index=0,
+                    key="hyp_town_selectbox"
+                )
+
+            else:
+                hyp_town = st.text_input(
+                    "Town",
+                    value=str(inputs.town) if getattr(inputs, "town", None) and str(inputs.town) != "Recommendation mode" else "",
+                    placeholder="e.g. Bishan",
+                )
+
             hyp_budget = st.number_input(
                 "Budget / asking price (SGD)",
                 min_value=50000,
@@ -388,6 +517,15 @@ def _save_hypothetical_flat(inputs):
 
     if not submitted:
         return False
+
+    # Re-run lookup on submit to be safe
+    detected_towns_submit = _lookup_towns_from_postal(hyp_postal)
+
+    if len(detected_towns_submit) == 1:
+        hyp_town = detected_towns_submit[0]
+    elif len(detected_towns_submit) > 1:
+        # keep selected option from selectbox
+        pass
 
     if not hyp_town:
         st.warning("Please enter a town for the hypothetical flat.")
@@ -793,7 +931,7 @@ def render_comparison_page(inputs, listings_df: pd.DataFrame):
 
     st.markdown("---")
 
-    created_new_hypothetical = _save_hypothetical_flat(inputs)
+    created_new_hypothetical = _save_hypothetical_flat(inputs, listings_df)
     if created_new_hypothetical:
         st.rerun()
 
