@@ -47,11 +47,6 @@ def build_user_inputs() -> UserInputs:
             "Preferred town",
             ["Recommendation mode"] + TOWNS,
         )
-        school_scope = st.selectbox(
-            "School preference",
-            SCHOOL_OPTIONS,
-            index=0,
-        )
 
     # ── Ranking preference ──
     st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
@@ -79,7 +74,7 @@ def build_user_inputs() -> UserInputs:
     # ── Amenity priorities ──
     st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)
     render_section(
-        "3",
+        "3a",
         "Amenity priorities",
         "Rate how important each amenity is to you (1 = low, 5 = high).",
     )
@@ -97,6 +92,7 @@ def build_user_inputs() -> UserInputs:
     }
 
     amenity_weights = {}
+    school_scope = SCHOOL_OPTIONS[0]
     for idx, key in enumerate(amenity_keys):
         col = [a1, a2, a3][idx % 3]
         with col:
@@ -106,6 +102,12 @@ def build_user_inputs() -> UserInputs:
                 max_value=5,
                 value=default_weights.get(key, 3),
             )
+            if key == "schools":
+                school_scope = st.selectbox(
+                    "School preference",
+                    SCHOOL_OPTIONS,
+                    index=0,
+                )
 
     # ── Anchor locations ──
     st.markdown("<div style='height:0.4rem'></div>", unsafe_allow_html=True)

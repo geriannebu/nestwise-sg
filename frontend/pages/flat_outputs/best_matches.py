@@ -299,9 +299,10 @@ def render_listing_tab(inputs, bundle) -> None:
 
         btn_cols = st.columns([1.5, 1.5, 5])
         user = st.session_state.get("current_user")
+        btn_idx = 0
         if user:
             st.session_state.saved_flats.setdefault(user, [])
-            with btn_cols[0]:
+            with btn_cols[btn_idx]:
                 if st.button("💾 Save", key=f"save_{row['listing_id']}"):
                     saved_ids = [f["listing_id"] for f in st.session_state.saved_flats[user]]
                     if row["listing_id"] not in saved_ids:
@@ -319,9 +320,10 @@ def render_listing_tab(inputs, bundle) -> None:
                         st.success(f"Saved {row['listing_id']} ✅")
                     else:
                         st.info(f"{row['listing_id']} already saved.")
+            btn_idx += 1
 
         if "listing_url" in row and row["listing_url"]:
-            with btn_cols[1]:
+            with btn_cols[btn_idx]:
                 st.link_button("View →", row["listing_url"])
 
     # comparison table
